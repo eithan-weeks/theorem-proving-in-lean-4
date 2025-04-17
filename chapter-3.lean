@@ -54,6 +54,8 @@ namespace AAADDD.mine
 end AAADDD.mine
 
 namespace AAAEEE
+  set_option linter.unusedVariables false
+
   variable {p : Prop}
   variable {q : Prop}
 
@@ -61,6 +63,8 @@ namespace AAAEEE
 end AAAEEE
 
 namespace AAAFFF
+  set_option linter.unusedVariables false
+
   variable {p : Prop}
   variable {q : Prop}
 
@@ -77,27 +81,128 @@ namespace AAAFFF.mine
 end AAAFFF.mine
 
 namespace AAAGGG
+  set_option linter.unusedVariables false
+
+  variable {p : Prop}
+  variable {q : Prop}
+
+  theorem t1 : p → q → p :=
+    fun hp : p =>
+    fun hq : q =>
+    show p from hp
 end AAAGGG
 
+namespace AAAGGG.mine
+  theorem t1v1 : {p q : Prop} → p → q → p :=
+    λ hp _ ↦ hp
+
+  theorem t1v2 : {p q : Prop} → p → q → p :=
+    λ {p _} hp _ ↦ show p from hp
+end AAAGGG.mine
+
 namespace AAAHHH
+  set_option linter.unusedVariables false
+
+  variable {p : Prop}
+  variable {q : Prop}
+
+  theorem t1 (hp : p) (hq : q) : p := hp
+
+  #print t1
 end AAAHHH
 
 namespace AAAIII
+  set_option linter.unusedVariables false
+
+  variable
+    {p : Prop}
+    {q : Prop}
+
+  theorem t1 (hp : p) (hq : q) : p := hp
+
+  axiom hp : p
+
+  theorem t2 : q → p := t1 hp
 end AAAIII
 
+namespace AAAIII.mine
+  def d1 {p q : Prop} (hp : p) (_ : q) :=
+    show p from hp
+
+  theorem t1 {p q : Prop} (hp : p) (_ : q) : p :=
+    hp
+end AAAIII.mine
+
 namespace AAAJJJ
+  axiom unsound : False
+
+  theorem ex : 1 = 0 :=
+    False.elim unsound
 end AAAJJJ
 
+namespace AAAJJJ.mine
+  #check False
+  #check Sort 0
+  #check trivial
+  #check True
+  #check False.elim
+  #check (False.elim)
+  #check @False.elim
+  #check sorry
+  #check (sorry)
+  #check @sorry
+end AAAJJJ.mine
+
 namespace AAAKKK
+  set_option linter.unusedVariables false
+
+  theorem t1 {p q : Prop} (hp : p) (hq : q) : p := hp
+
+  #print t1
 end AAAKKK
 
 namespace AAALLL
+  set_option linter.unusedVariables false
+
+  theorem t1 : ∀ {p q : Prop}, p → q → p :=
+    fun {p q : Prop} (hp : p) (hq : q) => hp
 end AAALLL
 
+namespace AAALLL.mine
+  theorem t1 : ∀ {p q : Prop}, p → q → p :=
+    λ hp _ ↦ hp
+
+  def compose : ∀ {α β γ : Type}, (β → γ) → (α → β) → α → γ :=
+    λ g f x ↦ g (f x)
+
+  def double : Nat → Nat :=
+    λ x ↦ x + x
+
+  def square : Nat → Nat :=
+    λ x ↦ x * x
+
+  #check compose double square 3
+  #eval compose double square 3
+
+  #check compose
+  #check @compose
+  #check (compose)
+  #print compose
+end AAALLL.mine
+
 namespace AAAMMM
+  set_option linter.unusedVariables false
+
+  variable {p q : Prop}
+
+  theorem t1 : p → q → p := fun (hp : p) (hq : q) => hp
 end AAAMMM
 
 namespace AAANNN
+  variable {p q : Prop}
+  variable (hp : p)
+
+  theorem t1 : q → p := fun (hq : q) => hp
 end AAANNN
 
 namespace AAAOOO
