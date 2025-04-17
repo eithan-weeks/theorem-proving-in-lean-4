@@ -216,6 +216,8 @@ namespace AAAPPP
 end AAAPPP
 
 namespace AAAQQQ
+  set_option linter.unusedVariables false
+
   def f (n : Nat) : String := toString n
   def g (s : String) : Bool := s.length > 0
 
@@ -248,6 +250,8 @@ namespace AAASSS
 end AAASSS
 
 namespace AAATTT
+  set_option linter.unusedVariables false
+
   #check (fun x : Nat => x) 1
   #check (fun x : Nat => true) 1
 
@@ -260,6 +264,8 @@ namespace AAATTT
 end AAATTT
 
 namespace AAAUUU
+  set_option linter.unusedVariables false
+
   #eval (fun x : Nat => x) 1
   #eval (fun x : Nat => true) 1
 end AAAUUU
