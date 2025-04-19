@@ -7,7 +7,7 @@
 	"editor.autoIndent": "none",
 	"editor.autoSurround": "never",
 	"editor.detectIndentation": false,
-	"editor.insertSpaces": false,
+	"editor.insertSpaces": true,
 	"editor.tabSize": 2,
 	"editor.useTabStops": false,
 	"files.eol": "\n",
