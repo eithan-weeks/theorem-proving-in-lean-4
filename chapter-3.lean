@@ -220,6 +220,8 @@ namespace AAANNN.mine
 end AAANNN.mine
 
 namespace AAAOOO
+  set_option linter.unusedVariables false
+
   theorem t1 (p q : Prop) (hp : p) (hq : q) : p := hp
 
   variable (p q r s : Prop)
@@ -525,127 +527,254 @@ namespace BBBJJJ.mine
 end BBBJJJ.mine
 
 namespace BBBKKK
+  open Classical
+
+  variable (p : Prop)
+  #check em p
 end BBBKKK
 
+namespace BBBKKK.mine
+  #check Classical.em
+  #check @Classical.em
+  #check (Classical.em)
+  #print Classical.em
+
+  #check Classical.choose
+  #check Classical.choice
+end BBBKKK.mine
+
 namespace BBBLLL
+  open Classical
+
+  theorem dne {p : Prop} (h : ¬¬p) : p :=
+    Or.elim (em p)
+    (fun hp : p => hp)
+    (fun hnp : ¬p => absurd hnp h)
 end BBBLLL
 
+namespace BBBLLL.mine
+  example : ∀ {p : Prop}, ¬p ↔ p → False :=
+    ⟨λ np ↦ np, λ ptf ↦ ptf⟩
+
+  -- example : False.elim ↔ absurd :=
+  --   sorry
+
+  theorem dne : ∀ {p : Prop}, ¬¬p → p :=
+    λ h ↦ (Classical.em _).elim
+      (λ hp ↦ hp) (λ hnp ↦ absurd hnp h)
+
+  #check (Classical.em)
+
+  -- example : ∀ (p : Prop), p ∨ ¬p :=
+  --   λ p ↦
+end BBBLLL.mine
+
 namespace BBBMMM
+  open Classical
+  variable (p : Prop)
+
+  example (h : ¬¬p) : p :=
+    byCases
+      (fun h1 : p => h1)
+      (fun h1 : ¬p => absurd h1 h)
 end BBBMMM
 
 namespace BBBNNN
+  open Classical
+  variable (p : Prop)
+
+  example (h : ¬¬p) : p :=
+    byContradiction
+      (fun h1 : ¬p =>
+        show False from h h1)
 end BBBNNN
 
+namespace BBBNNN.mine
+  #check @Classical.em
+  #check @Classical.byCases
+  #check @Classical.byContradiction
+end BBBNNN.mine
+
 namespace BBBOOO
+  open Classical
+  variable (p q : Prop)
+  example (h : ¬(p ∧ q)) : ¬p ∨ ¬q :=
+    Or.elim (em p)
+      (fun hp : p =>
+        Or.inr
+          (show ¬q from
+            fun hq : q =>
+              h ⟨hp, hq⟩))
+      (fun hnp : ¬p =>
+        Or.inl hnp)
 end BBBOOO
 
+namespace BBBOOO.mine
+  example : ∀ {p q : Prop}, ¬(p ∧ q) → ¬p ∨ ¬q :=
+    λ {p q} h ↦ (Classical.em p).elim
+    (λ hp ↦ Or.intro_right (¬p) (show ¬q from λ hq ↦ h ⟨hp, hq⟩))
+    (λ hnp ↦ Or.intro_left (¬q) hnp)
+
+  example : ∀ {p q : Prop}, ¬(p ∧ q) → ¬p ∨ ¬q :=
+    λ h ↦ (Classical.em _).elim
+    (λ hp ↦ Or.inr λ hq ↦ h ⟨hp, hq⟩)
+    (λ hnp ↦ Or.inl hnp)
+
+  example : ∀ {p q : Prop}, ¬(p ∧ q) → ¬p ∨ ¬q :=
+    λ {p q} h ↦ (Classical.em q).elim
+    (λ hq ↦ Or.intro_left (¬q) (show ¬p from λ hp ↦ h ⟨hp, hq⟩))
+    (λ hnq ↦ Or.intro_right (¬p) hnq)
+
+  example : ∀ {p q : Prop}, ¬(p ∧ q) → ¬p ∨ ¬q :=
+    λ h ↦ (Classical.em _).elim
+    (λ hq ↦ Or.inl λ hp ↦ h ⟨hp, hq⟩)
+    (λ hnq ↦ Or.inr hnq)
+end BBBOOO.mine
+
 namespace BBBPPP
+  open Classical
+
+  -- distributivity
+  example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
+    Iff.intro
+      (fun h : p ∧ (q ∨ r) =>
+        have hp : p := h.left
+        Or.elim (h.right)
+          (fun hq : q =>
+            show (p ∧ q) ∨ (p ∧ r) from Or.inl ⟨hp, hq⟩)
+          (fun hr : r =>
+            show (p ∧ q) ∨ (p ∧ r) from Or.inr ⟨hp, hr⟩))
+      (fun h : (p ∧ q) ∨ (p ∧ r) =>
+        Or.elim h
+          (fun hpq : p ∧ q =>
+            have hp : p := hpq.left
+            have hq : q := hpq.right
+            show p ∧ (q ∨ r) from ⟨hp, Or.inl hq⟩)
+          (fun hpr : p ∧ r =>
+            have hp : p := hpr.left
+            have hr : r := hpr.right
+            show p ∧ (q ∨ r) from ⟨hp, Or.inr hr⟩))
+
+  -- an example that requires classical reasoning
+  example (p q : Prop) : ¬(p ∧ ¬q) → (p → q) :=
+    fun h : ¬(p ∧ ¬q) =>
+    fun hp : p =>
+    show q from
+      Or.elim (em q)
+        (fun hq : q => hq)
+        (fun hnq : ¬q => absurd (And.intro hp hnq) h)
 end BBBPPP
 
+namespace BBBPPP.mine
+  #check @and_comm
+  #check @or_comm
+
+  #check @and_assoc
+  #check @or_assoc
+
+  #check @and_or_left
+  #check @and_or_right
+  #check @or_and_left
+  #check @or_and_right
+
+  example : ∀ (p q r : Prop), p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
+    λ p q r ↦ ⟨
+      λ h ↦ h.right.elim
+        (λ hq ↦ Or.intro_left  (p ∧ r) ⟨h.left, hq⟩)
+        (λ hr ↦ Or.intro_right (p ∧ q) ⟨h.left, hr⟩),
+      λ h ↦ h.elim
+        (λ hpq ↦ ⟨hpq.left, Or.intro_left  r hpq.right⟩)
+        (λ hpr ↦ ⟨hpr.left, Or.intro_right q hpr.right⟩)
+    ⟩
+end BBBPPP.mine
+
 namespace BBBQQQ
+  -- commutativity of ∧ and ∨
+
+  example : ∀ {p q : Prop}, p ∧ q ↔ q ∧ p :=
+    sorry
+
+  example : ∀ {p q : Prop}, p ∨ q ↔ q ∨ p :=
+    sorry
+
+  -- associativity of ∧ and ∨
+
+  example : ∀ {p q r : Prop}, (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) :=
+    sorry
+
+  example : ∀ {p q r : Prop}, (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) :=
+    sorry
+
+  -- distributivity
+
+  example : ∀ {p q r : Prop}, p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
+    sorry
+
+  example : ∀ {p q r : Prop}, p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) :=
+    sorry
+
+  -- other properties
+
+  example : ∀ {p q r : Prop}, (p → (q → r)) ↔ (p ∧ q → r) :=
+    sorry
+
+  example : ∀ {p q r : Prop}, ((p ∨ q ) → r) ↔ (p ∧ q → r):=
+    sorry
+
+  example : ∀ {p q : Prop}, ¬(p ∨ q) ↔ ¬p ∧ ¬q:=
+    sorry
+
+  example : ∀ {p q : Prop}, ¬p ∨ ¬q → ¬(p ∧ q):=
+    sorry
+
+  example : ∀ {p q : Prop}, ¬(p ∧ ¬p):=
+    sorry
+
+  example : ∀ {p q : Prop}, p ∧ ¬q → ¬(p → q):=
+    sorry
+
+  example : ∀ {p q : Prop}, ¬p → (p → q) :=
+    sorry
+
+  example : ∀ {p q : Prop}, (¬p ∨ q) → (p → q) :=
+    sorry
+
+  example : ∀ {p : Prop}, p ∨ False ↔ p:=
+    sorry
+
+  example : ∀ {p : Prop}, p ∧ False ↔ False :=
+    sorry
+
+  example : ∀ {p q : Prop}, (p → q) → (¬q → ¬p) :=
+    sorry
 end BBBQQQ
 
 namespace BBBRRR
+  example : ∀ {p q r : Prop}, (p → q ∨ r) → ((p → q) ∨ (p → r)) :=
+    sorry
+
+  example : ∀ {p q : Prop}, ¬(p ∧ q) → ¬p ∨ ¬q :=
+    sorry
+
+  example : ∀ {p q : Prop}, ¬(p → q) → p ∧ ¬q:=
+    sorry
+
+  example : ∀ {p q : Prop}, (p → q) → (¬p ∨ q):=
+    sorry
+
+  example : ∀ {p q : Prop}, (¬q → ¬p) → (p → q) :=
+    sorry
+
+  example : ∀ {p q : Prop}, p ∨ ¬p :=
+    sorry
+
+  example : ∀ {p q : Prop}, (((p → q) → p) → p) :=
+    sorry
 end BBBRRR
 
 namespace BBBSSS
+  -- prove without using classical logic
+
+  example : ∀ {p : Prop}, ¬(p ↔ ¬p) :=
+    sorry
 end BBBSSS
-
-namespace BBBTTT
-end BBBTTT
-
-namespace BBBUUU
-end BBBUUU
-
-namespace BBBVVV
-end BBBVVV
-
-namespace BBBWWW
-end BBBWWW
-
-namespace BBBXXX
-end BBBXXX
-
-namespace BBBYYY
-end BBBYYY
-
-namespace BBBZZZ
-end BBBZZZ
-
-namespace CCCAAA
-end CCCAAA
-
-namespace CCCBBB
-end CCCBBB
-
-namespace CCCCCC
-end CCCCCC
-
-namespace CCCDDD
-end CCCDDD
-
-namespace CCCEEE
-end CCCEEE
-
-namespace CCCFFF
-end CCCFFF
-
-namespace CCCGGG
-end CCCGGG
-
-namespace CCCHHH
-end CCCHHH
-
-namespace CCCIII
-end CCCIII
-
-namespace CCCJJJ
-end CCCJJJ
-
-namespace CCCKKK
-end CCCKKK
-
-namespace CCCLLL
-end CCCLLL
-
-namespace CCCMMM
-end CCCMMM
-
-namespace CCCNNN
-end CCCNNN
-
-namespace CCCOOO
-end CCCOOO
-
-namespace CCCPPP
-end CCCPPP
-
-namespace CCCQQQ
-end CCCQQQ
-
-namespace CCCRRR
-end CCCRRR
-
-namespace CCCSSS
-end CCCSSS
-
-namespace CCCTTT
-end CCCTTT
-
-namespace CCCUUU
-end CCCUUU
-
-namespace CCCVVV
-end CCCVVV
-
-namespace CCCWWW
-end CCCWWW
-
-namespace CCCXXX
-end CCCXXX
-
-namespace CCCYYY
-end CCCYYY
-
-namespace CCCZZZ
-end CCCZZZ
