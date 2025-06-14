@@ -692,89 +692,187 @@ namespace BBBQQQ
   -- commutativity of ∧ and ∨
 
   example : ∀ {p q : Prop}, p ∧ q ↔ q ∧ p :=
-    sorry
+    ⟨
+      λ hpq ↦ ⟨hpq.right, hpq.left⟩, λ hqp ↦ ⟨hqp.right, hqp.left⟩
+    ⟩
 
   example : ∀ {p q : Prop}, p ∨ q ↔ q ∨ p :=
-    sorry
+    ⟨
+      λ hpq ↦ hpq.elim (λ hp ↦ Or.inr hp) (λ hq ↦ Or.inl hq),
+      λ hqp ↦ hqp.elim (λ hq ↦ Or.inr hq) (λ hp ↦ Or.inl hp)
+    ⟩
 
   -- associativity of ∧ and ∨
 
   example : ∀ {p q r : Prop}, (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) :=
-    sorry
+    ⟨
+      λ hpq_r ↦ ⟨hpq_r.left.left, ⟨hpq_r.left.right, hpq_r.right⟩⟩,
+      λ hp_qr ↦ ⟨⟨hp_qr.left, hp_qr.right.left⟩, hp_qr.right.right⟩
+    ⟩
 
   example : ∀ {p q r : Prop}, (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) :=
-    sorry
+    ⟨
+      λ hpq_r ↦ hpq_r.elim
+        (λ hpq ↦ hpq.elim
+          (λ hp ↦ Or.inl hp)
+          (λ hq ↦ Or.inr (Or.inl hq)))
+        (λ hr ↦ Or.inr (Or.inr hr)),
+      λ hp_qr ↦ hp_qr.elim
+        (λ hp ↦ Or.inl (Or.inl hp))
+        (λ hqr ↦ hqr.elim
+          (λ hq ↦ Or.inl (Or.inr hq))
+          (λ hr ↦ Or.inr hr))
+    ⟩
 
   -- distributivity
 
   example : ∀ {p q r : Prop}, p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
-    sorry
+    ⟨
+      λ hp_qr ↦ hp_qr.right.elim
+        (λ hq ↦ Or.inl ⟨hp_qr.left, hq⟩)
+        (λ hr ↦ Or.inr ⟨hp_qr.left, hr⟩),
+      λ hpq_pr ↦ hpq_pr.elim
+        (λ hpq ↦ ⟨hpq.left, Or.inl hpq.right⟩)
+        (λ hpr ↦ ⟨hpr.left, Or.inr hpr.right⟩)
+    ⟩
 
   example : ∀ {p q r : Prop}, p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) :=
-    sorry
+    ⟨
+      λ hp_qr ↦ hp_qr.elim
+        (λ hp ↦ ⟨Or.inl hp, Or.inl hp⟩)
+        (λ hqr ↦ ⟨Or.inr hqr.left, Or.inr hqr.right⟩),
+      λ hpq_pr ↦ hpq_pr.left.elim
+        (λ hp ↦ Or.inl hp)
+        (λ hq ↦ hpq_pr.right.elim
+          (λ hp ↦ Or.inl hp)
+          (λ hr ↦ Or.inr ⟨hq, hr⟩))
+    ⟩
 
   -- other properties
 
   example : ∀ {p q r : Prop}, (p → (q → r)) ↔ (p ∧ q → r) :=
-    sorry
+    ⟨
+      λ hpqr ↦ λ hpq ↦ hpqr hpq.left hpq.right,
+      λ hpq_r ↦ λ hp hq ↦ hpq_r ⟨hp, hq⟩
+    ⟩
 
   example : ∀ {p q r : Prop}, ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) :=
-    sorry
+    ⟨
+      λ hpq_r ↦ ⟨
+        λ hp ↦ hpq_r (Or.inl hp),
+        λ hq ↦ hpq_r (Or.inr hq)
+      ⟩,
+      λ hpr_qr ↦
+        λ hpq ↦ hpq.elim
+          (λ hp ↦ hpr_qr.left hp)
+          (λ hq ↦ hpr_qr.right hq)
+    ⟩
 
   example : ∀ {p q : Prop}, ¬(p ∨ q) ↔ ¬p ∧ ¬q :=
-    sorry
+    ⟨
+      λ hn_pq ↦ ⟨
+        λ hp ↦ hn_pq (Or.inl hp),
+        λ hq ↦ hn_pq (Or.inr hq)
+      ⟩,
+      λ hnp_nq ↦
+        λ hpq ↦ hpq.elim
+          (λ hp ↦ hnp_nq.left hp)
+          (λ hq ↦ hnp_nq.right hq)
+    ⟩
 
   example : ∀ {p q : Prop}, ¬p ∨ ¬q → ¬(p ∧ q) :=
-    sorry
+    λ hnp_nq hpq ↦ hnp_nq.elim
+      (λ hnp ↦ hnp hpq.left)
+      (λ hnq ↦ hnq hpq.right)
 
   example : ∀ {p : Prop}, ¬(p ∧ ¬p) :=
-    sorry
+    λ hp_np ↦ hp_np.right hp_np.left
 
   example : ∀ {p q : Prop}, p ∧ ¬q → ¬(p → q) :=
-    sorry
+    λ hp_nq hpq ↦ hp_nq.right (hpq hp_nq.left)
 
   example : ∀ {p q : Prop}, ¬p → (p → q) :=
-    sorry
+    λ hnp hp ↦ absurd hp hnp
 
   example : ∀ {p q : Prop}, (¬p ∨ q) → (p → q) :=
-    sorry
+    λ hnp_q hp ↦ hnp_q.elim
+      (λ hnp ↦ absurd hp hnp)
+      (λ hq ↦ hq)
 
   example : ∀ {p : Prop}, p ∨ False ↔ p:=
-    sorry
+    ⟨
+      λ hp_F ↦ hp_F.elim (λ hp ↦ hp) (λ hF ↦ False.elim hF),
+      λ hp ↦ Or.inl hp
+    ⟩
 
   example : ∀ {p : Prop}, p ∧ False ↔ False :=
-    sorry
+    ⟨
+      λ hp_F ↦ hp_F.right, λ hF ↦ False.elim hF
+    ⟩
 
   example : ∀ {p q : Prop}, (p → q) → (¬q → ¬p) :=
-    sorry
+    λ hpq hqF hp ↦ hqF (hpq hp)
 end BBBQQQ
 
 namespace BBBRRR
   example : ∀ {p q r : Prop}, (p → q ∨ r) → ((p → q) ∨ (p → r)) :=
-    sorry
+    λ {p _ _} hp_qr ↦ (Classical.em p).elim
+      (λ hp ↦ (hp_qr hp).elim
+        (λ hq ↦ Or.inl (λ _ ↦ hq))
+        (λ hr ↦ Or.inr (λ _ ↦ hr)))
+      (λ hnp ↦ Or.inl (λ hp ↦ absurd hp hnp))
 
   example : ∀ {p q : Prop}, ¬(p ∧ q) → ¬p ∨ ¬q :=
-    sorry
+    -- λ {p q} hnpq ↦ (Classical.em p).elim
+    --   (λ hp ↦ (Classical.em q).elim
+    --     (λ hq ↦ absurd ⟨hp, hq⟩ hnpq)
+    --     (λ hnq ↦ Or.inr hnq))
+    --   (λ hnp ↦ Or.inl hnp)
+    λ {p _} hnpq ↦ (Classical.em p).elim
+      (λ hp ↦ Or.inr (λ hq ↦ hnpq ⟨hp, hq⟩))
+      (λ hnp ↦ Or.inl hnp)
 
   example : ∀ {p q : Prop}, ¬(p → q) → p ∧ ¬q :=
-    sorry
+    λ {p q} hnpq ↦ (Classical.em p).elim
+      (λ hp ↦ (Classical.em q).elim
+        (λ hq ↦ absurd (λ _ ↦ hq) hnpq)
+        (λ hnq ↦ ⟨hp, hnq⟩))
+      (λ hnp ↦
+        have hpq := λ hp ↦ absurd hp hnp
+        absurd hpq hnpq)
 
   example : ∀ {p q : Prop}, (p → q) → (¬p ∨ q) :=
-    sorry
+    λ {p _} hpq ↦ (Classical.em p).elim
+      (λ hp ↦ Or.inr (hpq hp))
+      (λ hnp ↦ Or.inl hnp)
 
   example : ∀ {p q : Prop}, (¬q → ¬p) → (p → q) :=
-    sorry
+    λ {_ q} hnq_np hp ↦ (Classical.em q).elim
+      (λ hq ↦ hq)
+      (λ hnq ↦ absurd hp (hnq_np hnq))
 
   example : ∀ {p : Prop}, p ∨ ¬p :=
-    sorry
+    Classical.em _
 
   example : ∀ {p q : Prop}, (((p → q) → p) → p) :=
-    sorry
+    λ {p _} hpq_p ↦ (Classical.em p).elim
+      (λ hp ↦ hp)
+      (λ hnp ↦
+        have hpq := λ hp ↦ absurd hp hnp
+        hpq_p hpq)
 end BBBRRR
 
 namespace BBBSSS
   -- prove without using classical logic
 
   example : ∀ {p : Prop}, ¬(p ↔ ¬p) :=
-    sorry
+    -- λ {p} hp_np ↦ (Classical.em p).elim
+    --   (λ hp ↦ hp_np.mp hp hp)
+    --   (λ hnp ↦ hp_np.mp (hp_np.mpr hnp) (hp_np.mpr hnp))
+    λ {p} hp_np ↦
+      have hpnp := hp_np.mp
+      have hnpp := hp_np.mpr
+      have hnp := λ hp ↦ absurd hp (hpnp hp)
+      have hp : p := hnpp hnp
+      hpnp hp hp
 end BBBSSS
