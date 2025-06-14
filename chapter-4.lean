@@ -941,17 +941,22 @@ namespace BBBSSS
   example : ∀ {α : Type} {p q : α → Prop},
     (∀ x, p x ∧ q x) ↔ (∀ x, p x) ∧ (∀ x, q x)
   :=
-    sorry
+    ⟨
+      λ xpxqx ↦ ⟨λ _ ↦ (xpxqx _).left, λ _ ↦ (xpxqx _).right⟩,
+      λ xpx_xqx x ↦ ⟨xpx_xqx.left x, xpx_xqx.right x⟩
+    ⟩
 
   example : ∀ {α : Type} {p q : α → Prop},
     (∀ x, p x → q x) → (∀ x, p x) → (∀ x, q x)
   :=
-    sorry
+    λ xpxqx xpx x ↦ xpxqx x (xpx x)
 
   example : ∀ {α : Type} {p q : α → Prop},
     (∀ x, p x) ∨ (∀ x, q x) → (∀ x, p x ∨ q x)
   :=
-    sorry
+    λ xpx_xqx x ↦ xpx_xqx.elim
+      (λ xpx ↦ Or.inl (xpx x))
+      (λ xqx ↦ Or.inr (xqx x))
 
   /- Understand why the reverse implication is not derivable in the last example. -/
 end BBBSSS
@@ -959,115 +964,230 @@ end BBBSSS
 namespace BBBTTT
   example :
     ∀ {α : Type} {r : Prop},
-    α → ((∀ x : α, r) ↔ r)
+    α → ((∀ _ : α, r) ↔ r)
   :=
-    sorry
+    λ x ↦ ⟨
+      λ xr ↦ xr x,
+      λ hr _ ↦ hr
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop} {r : Prop},
     (∀ x, p x ∨ r) ↔ (∀ x, p x) ∨ r
   :=
-    sorry
+    λ {_ _ r} ↦ ⟨
+      λ xpxr ↦ (Classical.em r).elim
+        (λ hr ↦ Or.inr hr)
+        (λ hnr ↦ Or.inl λ x ↦ (xpxr x).elim
+          (λ hpx ↦ hpx)
+          (λ hr ↦ absurd hr hnr)),
+      λ xpx_r x ↦ xpx_r.elim
+        (λ xpx ↦ Or.inl (xpx x))
+        (λ hr ↦ Or.inr hr)
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop} {r : Prop},
     (∀ x, r → p x) ↔ (r → ∀ x, p x)
   :=
-    sorry
+    ⟨
+      λ xrpx hr x ↦ xrpx x hr,
+      λ rxpx x hr ↦ rxpx hr x
+    ⟩
 end BBBTTT
+
+namespace BBBTTT.mine
+  example :
+    ∀ {α : Type} {r : Prop},
+    r → (∀ _ : α, r)
+  :=
+    λ hr ↦ (λ _ ↦ hr)
+
+  example :
+    ∀ {p q : Prop},
+    (p → q → p) ∨ ¬(p → q → p)
+  :=
+    Or.inl λ hp _ ↦ hp
+
+  example : ∀ {p : Prop}, p ↔ ¬¬p :=
+    ⟨
+      λ hp ↦ (λ hnp ↦ absurd hp hnp),
+      λ hnnp ↦ Classical.byContradiction λ hnp ↦ absurd hnp hnnp
+    ⟩
+
+  -- Derive exclude in the middle from double negation
+  -- example : ∀ {p : Prop}, (p ∨ ¬p) :=
+  --   sorry
+end BBBTTT.mine
 
 namespace BBBUUU
   example :
     ∀ {men : Type} {barber : men} {shaves : men → men → Prop},
     (∀ x : men, shaves barber x ↔ ¬ shaves x x) → False
   :=
-    sorry
+    λ {_ barber _} sbx_nsxx ↦
+      have sbb_nsbb := sbx_nsxx barber
+      have nsbb := λ sbb ↦ sbb_nsbb.mp sbb sbb
+      have sbb := sbb_nsbb.mpr nsbb
+      absurd sbb nsbb
 end BBBUUU
 
+namespace BBBUUU.mine
+  example : ∀ {p : Prop}, ¬(p ↔ ¬p) :=
+    λ p_np ↦
+      have hnp := λ hp ↦ p_np.mp hp hp
+      have hp := p_np.mpr hnp
+      absurd hp hnp
+end BBBUUU.mine
+
 namespace BBBVVV
-  def even : Nat → Prop := λ n ↦ sorry
+  def even : Nat → Prop :=
+    λ n ↦
+      2 | n
 
-  def prime : Nat → Prop := λ n ↦ sorry
+  def prime : Nat → Prop :=
+    λ n ↦
+      ¬ ∃ m, m > 1 ∧ m < n ∧ m | n
 
-  def infinitely_many_primes : Prop := sorry
+  def infinitely_many_primes : Prop :=
+    ∀ n, ∃ p,
+      p > n ∧ prime p
 
-  def Fermat_prime : Nat → Prop := λ n ↦ sorry
+  def Fermat_prime : Nat → Prop :=
+    λ n ↦
+      prime n ∧ ∃ k : Nat, 2 ^ (2 ^ k) + 1 = n
 
-  def infinitely_many_Fermat_primes : Prop := sorry
+  def infinitely_many_Fermat_primes : Prop :=
+    ∀ n, ∃ p,
+      p > n ∧ Fermat_prime p
 
-  def goldbach_conjecture : Prop := sorry
+  def goldbach_conjecture : Prop :=
+    ∀ n, n > 2 → ∃ p q,
+      prime p ∧ prime q ∧ n = p + q
 
-  def Goldbach's_weak_conjecture : Prop := sorry
+  def Goldbach's_weak_conjecture : Prop :=
+    ∀ n, ¬ even n ∧ n > 5 → ∃ p q r,
+      prime p ∧ prime q ∧ prime r ∧ n = p + q + r
 
-  def Fermat's_last_theorem : Prop := sorry
+  def Fermat's_last_theorem : Prop :=
+    ∀ n, n > 2 → ¬ ∃ a b c,
+      a ^ n + b ^ n = c ^ n ∧ a > 0 ∧ b > 0 ∧ c > 0
 end BBBVVV
 
 namespace BBBWWW
   example :
     ∀ {α : Type} {r : Prop},
-    (∃ x : α, r) → r
+    (∃ _ : α, r) → r
   :=
-    sorry
+    λ xr ↦ xr.elim λ _ hr ↦ hr
 
   example :
     ∀ {α : Type} {r : Prop},
-    (a : α) → r → (∃ x : α, r)
+    α → r → (∃ _ : α, r)
   :=
-    sorry
+    λ hα hr ↦ ⟨hα, hr⟩
 
   example :
     ∀ {α : Type} {p : α → Prop} {r : Prop},
     (∃ x, p x ∧ r) ↔ (∃ x, p x) ∧ r
   :=
-    sorry
+    ⟨
+      λ xpxr ↦ xpxr.elim λ x hpxr ↦ ⟨⟨x, hpxr.left⟩, hpxr.right⟩,
+      λ xpx_r ↦ xpx_r.left.elim λ x hpx ↦ ⟨x, ⟨hpx, xpx_r.right⟩⟩
+    ⟩
 
   example :
     ∀ {α : Type} {p q : α → Prop},
     (∃ x, p x ∨ q x) ↔ (∃ x, p x) ∨ (∃ x, q x)
   :=
-    sorry
+    ⟨
+      λ xpxqx ↦ xpxqx.elim λ x hpxqx ↦ hpxqx.elim
+        (λ hpx ↦ Or.inl ⟨x, hpx⟩)
+        (λ hqx ↦ Or.inr ⟨x, hqx⟩),
+      λ xpx_xqx ↦ xpx_xqx.elim
+        (λ xpx ↦ xpx.elim λ x hpx ↦ ⟨x, Or.inl hpx⟩)
+        (λ xqx ↦ xqx.elim λ x hqx ↦ ⟨x, Or.inr hqx⟩)
+    ⟩
 
 
   example :
     ∀ {α : Type} {p : α → Prop},
     (∀ x, p x) ↔ ¬ (∃ x, ¬ p x)
   :=
-    sorry
+    ⟨
+      λ xpx xnpx ↦xnpx.elim λ x hnpx ↦ absurd (xpx x) hnpx,
+      λ nxnpx x ↦ Classical.byContradiction λ hnpx ↦
+        absurd ⟨x, hnpx⟩ nxnpx
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop},
     (∃ x, p x) ↔ ¬ (∀ x, ¬ p x)
   :=
-    sorry
+    ⟨
+      λ xpx xnpx ↦ xpx.elim λ x hpx ↦ absurd hpx (xnpx x),
+      λ nxnpx ↦ Classical.byContradiction λ nxpx ↦
+        absurd (λ x hpx ↦ absurd ⟨x, hpx⟩ nxpx) nxnpx
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop},
     (¬ ∃ x, p x) ↔ (∀ x, ¬ p x)
   :=
-    sorry
+    ⟨
+      λ nxpx x hpx ↦ absurd ⟨x, hpx⟩ nxpx,
+      λ xnpx xpx ↦ xpx.elim λ x hpx ↦ absurd hpx (xnpx x)
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop},
     (¬ ∀ x, p x) ↔ (∃ x, ¬ p x)
   :=
-    sorry
+    ⟨
+      λ nxpx ↦ Classical.byContradiction λ nxnpx ↦
+        absurd
+          (λ x ↦ Classical.byContradiction λ hnpx ↦
+            absurd ⟨x, hnpx⟩ nxnpx)
+          nxpx,
+      λ xnpx xpx ↦ xnpx.elim λ x hnpx ↦ absurd (xpx x) hnpx
+    ⟩
 
 
   example :
     ∀ {α : Type} {p : α → Prop} {r : Prop},
     (∀ x, p x → r) ↔ (∃ x, p x) → r
   :=
-    sorry
+    ⟨
+      λ xpxr xpx ↦ xpx.elim λ x hpx ↦ xpxr x hpx,
+      λ xpx_r x hpx ↦ xpx_r ⟨x, hpx⟩
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop} {r : Prop},
-    (a : α) → (∃ x, p x → r) ↔ (∀ x, p x) → r
-  :=
-    sorry
+    α → ((∃ x, p x → r) ↔ (∀ x, p x) → r)
+   :=
+    λ {_ p _} hα ↦ ⟨
+      λ xpxr xpx ↦ xpxr.elim λ x pxr ↦ pxr (xpx x),
+      λ xpx_r ↦ (Classical.em (∀ x, p x)).elim
+        (λ xpx ↦ ⟨hα, λ _ ↦ xpx_r xpx⟩)
+        (λ nxpx ↦
+          have xnpx : ∃ x, ¬p x :=
+            Classical.byContradiction λ nxnpx ↦
+              absurd
+                (λ x ↦ Classical.byContradiction λ hnp ↦
+                  absurd ⟨x, hnp⟩ nxnpx)
+                nxpx
+          xnpx.elim λ x hnpx ↦ ⟨x, λ hpx ↦ absurd hpx hnpx⟩)
+    ⟩
 
   example :
     ∀ {α : Type} {p : α → Prop} {r : Prop},
-    (a : α) → (∃ x, r → p x) ↔ (r → ∃ x, p x)
+    α → ((∃ x, r → p x) ↔ (r → ∃ x, p x))
   :=
-    sorry
+    λ {_ _ r} hα ↦ ⟨
+      λ xrpx hr ↦ xrpx.elim λ x rpx ↦ ⟨x, rpx hr⟩,
+      λ r_xpx ↦ (Classical.em r).elim
+        (λ hr ↦ (r_xpx hr).elim λ x hpx ↦ ⟨x, λ _ ↦ hpx⟩)
+        (λ hnr ↦ ⟨hα, λ hr ↦ absurd hr hnr⟩)
+    ⟩
 end BBBWWW
